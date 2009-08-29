@@ -32,8 +32,16 @@ public class BugLinkyServlet extends AbstractRobotServlet {
 	/** Dispatch events to the appropriate handler method. */
 	private void dispatchEvents(RobotMessageBundle bundle) {
 		for (Event e: bundle.getEvents()) {
-			if (e.getType() == EventType.BLIP_SUBMITTED)
+			switch (e.getType()) {
+			// One or the other of these should be wired up in
+			// capabilities.xml.  If we use BLIP_SUBMITTED, we'll apply our
+			// links once the user clicks "Done".  If we use
+			// BLIP_VERSION_CHANGED, we'll apply our links in real time.
+			case BLIP_SUBMITTED:
+			case BLIP_VERSION_CHANGED:
 				addLinksToBlip(e.getBlip());
+				break;
+			}
 		}
 	}
 
