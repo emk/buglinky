@@ -46,7 +46,7 @@ public class BugLinkyServlet extends AbstractRobotServlet {
 	/** Dispatch events to the appropriate handler method. */
 	private void dispatchEvents(RobotMessageBundle bundle) {
 		for (Event e: bundle.getEvents()) {
-			if (e.getModifiedBy() != ME) {
+			if (!e.getModifiedBy().equals(ME)) {
 				switch (e.getType()) {
 				// One or the other of these should be wired up in
 				// capabilities.xml.  If we use BLIP_SUBMITTED, we'll apply
