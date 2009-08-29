@@ -8,16 +8,19 @@ import com.google.wave.api.*;
 
 @SuppressWarnings("serial")
 public class BugLinkyServlet extends AbstractRobotServlet {
-	private static final Logger log = Logger.getLogger(BugLinkyServlet.class.getName());
+	private static final String LINK = "link/manual";
+	private static final Logger log =
+		Logger.getLogger(BugLinkyServlet.class.getName());
 	private static final String BUG_URL =
 		"http://code.google.com/p/google-wave-resources/issues/detail?id=";
 
 	/**
-	 * Regex used to find bug numbers in the text.  Note that we require at least
-	 * one non-numeric character after the bug number (and not a newline).  This ensures
-	 * that when the user is adding text at the end of a paragraph, we won't add any links
-	 * until the user is safely outside the area that we need to modify.  Users making
-	 * modifications inside of paragraphs will have to live with minor glitches.
+	 * Regex used to find bug numbers in the text. Note that we require at least
+	 * one non-numeric character after the bug number (and not a newline). This
+	 * ensures that when the user is adding text at the end of a paragraph, we
+	 * won't add any links until the user is safely outside the area that we
+	 * need to modify. Users making modifications inside of paragraphs will have
+	 * to live with minor glitches.
 	 */
 	private static final Pattern REGEX =
 		Pattern.compile("(?:bug|issue) #(\\d+)(?!\\d|\\r|\\n)");
@@ -32,7 +35,8 @@ public class BugLinkyServlet extends AbstractRobotServlet {
 
 	/** Add an instruction blip to this wave if we were just added. */
 	private void addInstructionsToWave(RobotMessageBundle bundle) {
-		log.fine("Adding instructions to wavelet " + bundle.getWavelet().getWaveletId());
+		log.fine("Adding instructions to wavelet " +
+				bundle.getWavelet().getWaveletId());
 		Blip blip = bundle.getWavelet().appendBlip();
 		TextView textView = blip.getDocument();
 		textView.append("buglinky will attempt to link \"bug #NNN\" to a bug tracker.");
@@ -43,8 +47,8 @@ public class BugLinkyServlet extends AbstractRobotServlet {
 		for (Event e: bundle.getEvents()) {
 			switch (e.getType()) {
 			// One or the other of these should be wired up in
-			// capabilities.xml.  If we use BLIP_SUBMITTED, we'll apply our
-			// links once the user clicks "Done".  If we use
+			// capabilities.xml.  If we use BLIP_SUBMITTED, we'll apply
+			// our links once the user clicks "Done".  If we use
 			// BLIP_VERSION_CHANGED, we'll apply our links in real time.
 			case BLIP_SUBMITTED:
 			case BLIP_VERSION_CHANGED:
@@ -67,15 +71,16 @@ public class BugLinkyServlet extends AbstractRobotServlet {
 			String url = BUG_URL.concat(matcher.group(1));
 			if (!isAnnotationAlreadyPresent(doc, range, url)) {
 				log.fine("Making new link to " + url);
-				doc.setAnnotation(range, "link/manual", url);
+				doc.setAnnotation(range, LINK, url);
 			}
 		}
 	}
 
 	/** Have we already added this annotation? */
 	private boolean isAnnotationAlreadyPresent(TextView doc, Range range, String url) {
-		for (Annotation annotation : doc.getAnnotations(range, "link/manual")) {
-			if (annotation.getRange().equals(range) && annotation.getValue().equals(url))
+		for (Annotation annotation : doc.getAnnotations(range, LINK)) {
+			if (annotation.getRange().equals(range) &&
+					annotation.getValue().equals(url))
 				return true;
 		}
 		return false;
