@@ -72,20 +72,20 @@ public class BugLinkyServlet extends AbstractRobotServlet {
 			log.fine("Found a link: " + matcher.group());
 			Range range = new Range(matcher.start(), matcher.end());
 			String url = BUG_URL.concat(matcher.group(1));
-			if (!isAnnotationAlreadyPresent(doc, range, url)) {
-				log.fine("Making new link to " + url);
-				doc.setAnnotation(range, LINK, url);
-			}
+			maybeAnnotate(doc, range, LINK, url);
 		}
 	}
 
-	/** Have we already added this annotation? */
-	private boolean isAnnotationAlreadyPresent(TextView doc, Range range, String url) {
-		for (Annotation annotation : doc.getAnnotations(range, LINK)) {
+	/** Add an annotation if it isn't already present. */
+	private void maybeAnnotate(TextView doc, Range range, String name, String value) {
+		// If this annotation is already present, give up now.
+		for (Annotation annotation : doc.getAnnotations(range, name)) {
 			if (annotation.getRange().equals(range) &&
-					annotation.getValue().equals(url))
-				return true;
+					annotation.getValue().equals(value))
+				return;
 		}
-		return false;
+		
+		log.fine("Making new link to " + value);
+		doc.setAnnotation(range, name, value);
 	}
 }
