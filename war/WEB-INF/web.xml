@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns="http://java.sun.com/xml/ns/javaee"
+xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
+	<servlet>
+		<servlet-name>BugLinky</servlet-name>
+		<servlet-class>buglinky.BugLinkyServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>BugLinky</servlet-name>
+		<url-pattern>/_wave/robot/jsonrpc</url-pattern>
+	</servlet-mapping>
+	
+	<servlet>
+		<servlet-name>Profile</servlet-name>
+		<servlet-class>buglinky.BugLinkyProfileServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>Profile</servlet-name>
+		<url-pattern>/_wave/robot/profile</url-pattern>
+	</servlet-mapping> 
+</web-app>
