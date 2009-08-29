@@ -5,7 +5,7 @@
     This configuration file was written by the eclipse-cs plugin configuration editor
 -->
 <!--
-    Checkstyle-Configuration: MediaDemo checks
+    Checkstyle-Configuration: BugLinky style rules
     Description: none
 -->
 <module name="Checker">
@@ -38,7 +38,9 @@
     <module name="ParameterName"/>
     <module name="StaticVariableName"/>
     <module name="TypeName"/>
-    <module name="AvoidStarImport"/>
+    <module name="AvoidStarImport">
+      <property name="excludes" value="com.google.wave.api"/>
+    </module>
     <module name="IllegalImport"/>
     <module name="RedundantImport"/>
     <module name="UnusedImports"/>
@@ -106,6 +108,7 @@
       <property name="severity" value="ignore"/>
     </module>
     <module name="UpperEll"/>
+    <module name="StringLiteralEquality"/>
   </module>
   <module name="JavadocPackage"/>
   <module name="NewlineAtEndOfFile">

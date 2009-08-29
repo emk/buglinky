@@ -6,12 +6,17 @@ import java.util.regex.Pattern;
 
 import com.google.wave.api.*;
 
+/** Called via JSON-RPC whenever an event occurs on one of our waves. */
 @SuppressWarnings("serial")
 public class BugLinkyServlet extends AbstractRobotServlet {
+	private static final Logger LOG =
+		Logger.getLogger(BugLinkyServlet.class.getName());
+	
 	private static final String ME = "buglinky@appspot.com";
 	private static final String LINK = "link/manual";
-	private static final Logger log =
-		Logger.getLogger(BugLinkyServlet.class.getName());
+
+	private static final String INSTRUCTIONS =
+		"buglinky will attempt to link \"bug #NNN\" to a bug tracker.";
 	private static final String BUG_URL =
 		"http://code.google.com/p/google-wave-resources/issues/detail?id=";
 
@@ -36,16 +41,16 @@ public class BugLinkyServlet extends AbstractRobotServlet {
 
 	/** Add an instruction blip to this wave if we were just added. */
 	private void addInstructionsToWave(RobotMessageBundle bundle) {
-		log.fine("Adding instructions to wavelet " +
+		LOG.fine("Adding instructions to wavelet " +
 				bundle.getWavelet().getWaveletId());
 		Blip blip = bundle.getWavelet().appendBlip();
 		TextView textView = blip.getDocument();
-		textView.append("buglinky will attempt to link \"bug #NNN\" to a bug tracker.");
+		textView.append(INSTRUCTIONS);
 	}
 
 	/** Dispatch events to the appropriate handler method. */
 	private void dispatchEvents(RobotMessageBundle bundle) {
-		for (Event e: bundle.getEvents()) {
+		for (Event e : bundle.getEvents()) {
 			if (!e.getModifiedBy().equals(ME)) {
 				switch (e.getType()) {
 				// One or the other of these should be wired up in
@@ -56,6 +61,9 @@ public class BugLinkyServlet extends AbstractRobotServlet {
 				case BLIP_VERSION_CHANGED:
 					addLinksToBlip(e.getBlip());
 					break;
+					
+				default:
+					break;
 				}
 			}
 		}
@@ -63,13 +71,13 @@ public class BugLinkyServlet extends AbstractRobotServlet {
 
 	/** Add links to the specified blip. */
 	private void addLinksToBlip(Blip blip) {
-		log.fine("Adding links to blip " + blip.getBlipId());
+		LOG.fine("Adding links to blip " + blip.getBlipId());
 		// Adapted from http://senikk.com/min-f%C3%B8rste-google-wave-robot,
 		// a robot which links to @names on Twitter.
 		TextView doc = blip.getDocument();
 		Matcher matcher = REGEX.matcher(doc.getText());
 		while (matcher.find()) {
-			log.fine("Found a link: " + matcher.group());
+			LOG.fine("Found a link: " + matcher.group());
 			Range range = new Range(matcher.start(), matcher.end());
 			String url = BUG_URL.concat(matcher.group(1));
 			maybeAnnotate(doc, range, LINK, url);
@@ -77,7 +85,8 @@ public class BugLinkyServlet extends AbstractRobotServlet {
 	}
 
 	/** Add an annotation if it isn't already present. */
-	private void maybeAnnotate(TextView doc, Range range, String name, String value) {
+	private void maybeAnnotate(TextView doc, Range range, String name,
+			String value) {
 		// If this annotation is already present, give up now.
 		for (Annotation annotation : doc.getAnnotations(range, name)) {
 			if (annotation.getRange().equals(range) &&
@@ -85,7 +94,7 @@ public class BugLinkyServlet extends AbstractRobotServlet {
 				return;
 		}
 		
-		log.fine("Making new link to " + value);
+		LOG.fine("Making new link to " + value);
 		doc.setAnnotation(range, name, value);
 	}
 }
