@@ -23,7 +23,7 @@ public class BugLinkyServlet extends AbstractRobotServlet {
 
 	/** Add an instruction blip to this wave if we were just added. */
 	private void addInstructionsToWave(RobotMessageBundle bundle) {
-		log.info("Adding instructions to the wave.");
+		log.info("Adding instructions to wavelet " + bundle.getWavelet().getWaveletId());
 		Blip blip = bundle.getWavelet().appendBlip();
 		TextView textView = blip.getDocument();
 		textView.append("buglinky will attempt to link \"bug #NNN\" to a bug tracker.");
@@ -39,7 +39,7 @@ public class BugLinkyServlet extends AbstractRobotServlet {
 
 	/** Add links to the specified blip. */
 	private void addLinksToBlip(Blip blip) {
-		log.info("Adding instructions to a blip.");
+		log.info("Adding links to blip " + blip.getBlipId());
 		// Adapted from http://senikk.com/min-f%C3%B8rste-google-wave-robot,
 		// a robot which links to @names on Twitter.
 		TextView doc = blip.getDocument();
