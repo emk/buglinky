@@ -23,7 +23,7 @@ public class BugLinkyServlet extends AbstractRobotServlet {
 
 	/** Add an instruction blip to this wave if we were just added. */
 	private void addInstructionsToWave(RobotMessageBundle bundle) {
-		log.info("Adding instructions to wavelet " + bundle.getWavelet().getWaveletId());
+		log.fine("Adding instructions to wavelet " + bundle.getWavelet().getWaveletId());
 		Blip blip = bundle.getWavelet().appendBlip();
 		TextView textView = blip.getDocument();
 		textView.append("buglinky will attempt to link \"bug #NNN\" to a bug tracker.");
@@ -47,13 +47,13 @@ public class BugLinkyServlet extends AbstractRobotServlet {
 
 	/** Add links to the specified blip. */
 	private void addLinksToBlip(Blip blip) {
-		log.info("Adding links to blip " + blip.getBlipId());
+		log.fine("Adding links to blip " + blip.getBlipId());
 		// Adapted from http://senikk.com/min-f%C3%B8rste-google-wave-robot,
 		// a robot which links to @names on Twitter.
 		TextView doc = blip.getDocument();
 		Matcher matcher = REGEX.matcher(doc.getText());
 		while (matcher.find()) {
-			log.info("Found a link: " + matcher.group());
+			log.fine("Found a link: " + matcher.group());
 			Range range = new Range(matcher.start(), matcher.end());
 			String bugNumber = matcher.group(1);
 			doc.setAnnotation(range, "link/manual", BUG_URL.concat(bugNumber));
