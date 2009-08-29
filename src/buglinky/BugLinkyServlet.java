@@ -9,9 +9,18 @@ import com.google.wave.api.*;
 @SuppressWarnings("serial")
 public class BugLinkyServlet extends AbstractRobotServlet {
 	private static final Logger log = Logger.getLogger(BugLinkyServlet.class.getName());
-	private static final Pattern REGEX = Pattern.compile("bug #(\\d+)");
 	private static final String BUG_URL =
 		"http://code.google.com/p/google-wave-resources/issues/detail?id=";
+
+	/**
+	 * Regex used to find bug numbers in the text.  Note that we require at least
+	 * one non-numeric character after the bug number (and not a newline).  This ensures
+	 * that when the user is adding text at the end of a paragraph, we won't add any links
+	 * until the user is safely outside the area that we need to modify.  Users making
+	 * modifications inside of paragraphs will have to live with minor glitches.
+	 */
+	private static final Pattern REGEX =
+		Pattern.compile("(?:bug|issue) #(\\d+)(?!\\d|\\r|\\n)");
 
 	/** Called when we receive events from the Wave server. */
 	@Override
@@ -55,8 +64,20 @@ public class BugLinkyServlet extends AbstractRobotServlet {
 		while (matcher.find()) {
 			log.fine("Found a link: " + matcher.group());
 			Range range = new Range(matcher.start(), matcher.end());
-			String bugNumber = matcher.group(1);
-			doc.setAnnotation(range, "link/manual", BUG_URL.concat(bugNumber));
+			String url = BUG_URL.concat(matcher.group(1));
+			if (!isAnnotationAlreadyPresent(doc, range, url)) {
+				log.fine("Making new link to " + url);
+				doc.setAnnotation(range, "link/manual", url);
+			}
 		}
+	}
+
+	/** Have we already added this annotation? */
+	private boolean isAnnotationAlreadyPresent(TextView doc, Range range, String url) {
+		for (Annotation annotation : doc.getAnnotations(range, "link/manual")) {
+			if (annotation.getRange().equals(range) && annotation.getValue().equals(url))
+				return true;
+		}
+		return false;
 	}
 }
