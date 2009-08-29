@@ -84,17 +84,27 @@ public class BugLinkyServlet extends AbstractRobotServlet {
 		}
 	}
 
-	/** Add an annotation if it isn't already present. */
+	/**
+	 * Add an annotation if it isn't already present.
+	 * 
+	 * The Wave Robot API does not currently filter out duplicate annotation
+	 * requests, which causes extra network traffic and more possibilities for
+	 * nasty bot loops.  So we do this screening on our end.
+	 */
 	private void maybeAnnotate(TextView doc, Range range, String name,
 			String value) {
-		// If this annotation is already present, give up now.
+		// If this annotation is already present, give up now.  Note that
+		// we allow the existing annotation to be bigger than the one we're
+		// creating, because in that case, setting the new annotation won't
+		// do anything useful.
 		for (Annotation annotation : doc.getAnnotations(range, name)) {
-			if (annotation.getRange().equals(range) &&
-					annotation.getValue().equals(value))
+			if (annotation.getValue().equals(value) &&
+					annotation.getRange().getStart() <= range.getStart() &&
+					range.getEnd() <= annotation.getRange().getEnd())
 				return;
 		}
 		
-		LOG.fine("Making new link to " + value);
+		LOG.fine("Annotating with " + value);
 		doc.setAnnotation(range, name, value);
 	}
 }
