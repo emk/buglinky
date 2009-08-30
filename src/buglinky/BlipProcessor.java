@@ -15,13 +15,17 @@
 
 package buglinky;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.google.wave.api.Annotation;
 import com.google.wave.api.Blip;
+import com.google.wave.api.Event;
 import com.google.wave.api.Range;
+import com.google.wave.api.RobotMessageBundle;
 import com.google.wave.api.TextView;
 
 /**
@@ -36,6 +40,42 @@ abstract class BlipProcessor {
 	 * blip, and the length after text replacements have been performed.
 	 */
 	private int totalCorrection;
+
+	/**
+	 * Apply a list of blip processors to any blips which have changed.
+	 * 
+	 * @param processors The event processors to apply, in order.
+	 * @param bundle     The event bundle indicating which blips have changed.
+	 * @param myAddress  The Wave address of the current bot, used to make sure
+	 *                   we don't respond to our own messages.  BE CAREFUL!
+	 *                   Failure to specify the correct address will cause
+	 *                   infinite loops and overwhelm the servers.
+	 */
+	static void applyProcessorsToChangedBlips(
+			ArrayList<BlipProcessor> processors,
+			RobotMessageBundle bundle, String myAddress) {
+		// Find all affected blips.
+		HashSet<Blip> changedBlips = new HashSet<Blip>();
+		for (Event e : bundle.getEvents()) {
+			if (!e.getModifiedBy().equals(myAddress)) {
+				switch (e.getType()) {
+				case BLIP_SUBMITTED:        // The user has clicked "Done".
+				case BLIP_VERSION_CHANGED:  // The blip has been updated.
+					changedBlips.add(e.getBlip());
+					break;
+					
+				default:
+					break;
+				}
+			}
+		}
+		
+		// Process all affected blips.
+		for (Blip blip : changedBlips) {
+			for (BlipProcessor processor : processors)
+				processor.processBlip(blip);
+		}
+	}
 
 	/**
 	 * Apply this text processor to the specified blip.  This function

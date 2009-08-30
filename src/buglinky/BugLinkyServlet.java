@@ -20,7 +20,6 @@ import java.util.logging.Logger;
 
 import com.google.wave.api.AbstractRobotServlet;
 import com.google.wave.api.Blip;
-import com.google.wave.api.Event;
 import com.google.wave.api.RobotMessageBundle;
 import com.google.wave.api.TextView;
 
@@ -55,7 +54,7 @@ public class BugLinkyServlet extends AbstractRobotServlet {
 	public void processEvents(RobotMessageBundle bundle) {
 		if (bundle.wasSelfAdded())
 			addInstructionsToWave(bundle);
-		dispatchEvents(bundle);
+		processBlips(bundle);
 	}
 
 	/** Add an instruction blip to this wave if we were just added. */
@@ -67,32 +66,14 @@ public class BugLinkyServlet extends AbstractRobotServlet {
 		textView.append(INSTRUCTIONS);
 	}
 
-	/** Dispatch events to the appropriate handler method. */
-	private void dispatchEvents(RobotMessageBundle bundle) {
+	/** Process any blips which have changed. */
+	private void processBlips(RobotMessageBundle bundle) {
 		// We clean up URLs first, so that we can annotate the newly-created
 		// text in the second pass.
 		ArrayList<BlipProcessor> processors = new ArrayList<BlipProcessor>();
 		processors.add(new BugUrlReplacer(BUG_URL)); 
 		processors.add(new BugNumberLinker(BUG_URL)); 
-
-		// Process each event.
-		for (Event e : bundle.getEvents()) {
-			if (!e.getModifiedBy().equals(BOT_ADDRESS)) {
-				switch (e.getType()) {
-				// One or the other of these should be wired up in
-				// capabilities.xml.  If we use BLIP_SUBMITTED, we'll apply
-				// our links once the user clicks "Done".  If we use
-				// BLIP_VERSION_CHANGED, we'll apply our links in real time.
-				case BLIP_SUBMITTED:
-				case BLIP_VERSION_CHANGED:
-					for (BlipProcessor processor : processors)
-						processor.processBlip(e.getBlip());
-					break;
-					
-				default:
-					break;
-				}
-			}
-		}
+		BlipProcessor.applyProcessorsToChangedBlips(processors, bundle,
+				BOT_ADDRESS);		
 	}
 }
