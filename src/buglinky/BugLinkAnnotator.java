@@ -32,7 +32,7 @@ class BugLinkAnnotator extends Annotator {
 
 	/** Return a regular expression matching the text we want to process. */
 	protected String getPattern() {
-		return "(?:bug|issue) #(\\d+)";
+		return "(?:[Bb]ug|[Ii]ssue|[Tt]icket|[Cc]ase) #(\\d+)";
 	}
 	
 	/** Process a regular expression match. */
