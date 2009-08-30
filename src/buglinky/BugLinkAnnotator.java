@@ -16,7 +16,6 @@
 package buglinky;
 
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import com.google.wave.api.Range;
 import com.google.wave.api.TextView;
@@ -32,14 +31,8 @@ class BugLinkAnnotator extends Annotator {
 	}
 
 	/** Return a regular expression matching the text we want to process. */
-	protected Pattern getPattern() {
-		// Regex used to find bug numbers in the text. Note that we require at
-		// least one non-numeric character after the bug number (and not a
-		// newline).  This ensures that when the user is adding text at the
-		// end of a paragraph, we won't add any links until the user is safely
-		// outside the area that we need to modify. Users making modifications
-		// inside of paragraphs will have to live with minor glitches.
-		return Pattern.compile("(?:bug|issue) #(\\d+)(?!\\d|\\r|\\n)");
+	protected String getPattern() {
+		return "(?:bug|issue) #(\\d+)";
 	}
 	
 	/** Process a regular expression match. */

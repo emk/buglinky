@@ -31,26 +31,64 @@ abstract class Annotator {
 	private static final Logger LOG =
 		Logger.getLogger(Annotator.class.getName());
 
-	/** Return a regular expression matching the text we want to process. */
-	protected abstract Pattern getPattern();
-	
-	/** Process a regular expression match. */
-	protected abstract void processMatch(TextView doc, Range range,
-			Matcher match);
-
-	/** Add links to the specified blip. */
+	/**
+	 * Annotate the specified blip.
+	 */
 	public void processBlip(Blip blip) {
 		LOG.fine("Annotating blip " + blip.getBlipId());
 		// Adapted from http://senikk.com/min-f%C3%B8rste-google-wave-robot,
 		// a robot which links to @names on Twitter.
 		TextView doc = blip.getDocument();
-		Matcher matcher = getPattern().matcher(doc.getText());
+		Matcher matcher = getCompiledPattern().matcher(doc.getText());
 		while (matcher.find()) {
 			LOG.fine("Found text to annotate: " + matcher.group());
 			Range range = new Range(matcher.start(), matcher.end());
 			processMatch(doc, range, matcher);
 		}
 	}
+
+	/**
+	 * Return a regular expression matching the text we want to process.
+	 */
+	protected abstract String getPattern();
+	
+	/**
+	 * Take our simple pattern, add some kludges, and compile it.
+	 */
+	private Pattern getCompiledPattern() {
+		// KLUDGE - Try to avoid annotating text while the user's caret is
+		// still inside the annotation.  For example, imagine that the user
+		// types:
+		//
+		//   bug #12|
+		//
+		// ...where "|" represents the cursor.  We could immediately annotate
+		// this with a link:
+		//
+		//   [bug #12|]
+		//
+		// ...but this will tend to make a mess when the user keeps typing:
+		//
+		//   [bug #12 is very annoying|]
+		//
+		// Instead, we require at least one non-newline character to appear 
+		// after the match before we try to annotate it.  (Note that this hack
+		// won't work anywhere but at the end of a paragraph.  Users making
+		// modifications inside of paragraphs will have to live with minor
+		// glitches until the Wave API improves.)
+		//
+		// To do this, we use a zero-width negative lookahead pattern.  But we
+		// don't want to use the last character that would normally be matched
+		// by getPattern as our negative lookahead, so we use a possessive
+		// qualifier to avoid backtracking.
+		return Pattern.compile("(?:" + getPattern() + "){1}+(?!\\r|\\n)");
+	}
+	
+	/**
+	 * Process a regular expression match.
+	 */
+	protected abstract void processMatch(TextView doc, Range range,
+			Matcher match);
 
 	/**
 	 * Add an annotation if it isn't already present.
