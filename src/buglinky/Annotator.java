@@ -97,7 +97,7 @@ abstract class Annotator {
 	 * requests, which causes extra network traffic and more possibilities for
 	 * nasty bot loops.  So we do this screening on our end.
 	 */
-	protected void maybeAnnotate(TextView doc, Range range, String name,
+	protected void annotate(TextView doc, Range range, String name,
 			String value) {
 		// If this annotation is already present, give up now.  Note that
 		// we allow the existing annotation to be bigger than the one we're

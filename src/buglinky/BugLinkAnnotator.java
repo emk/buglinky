@@ -37,6 +37,6 @@ class BugLinkAnnotator extends Annotator {
 	
 	/** Process a regular expression match. */
 	protected void processMatch(TextView doc, Range range, Matcher match) {
-		maybeAnnotate(doc, range, "link/manual", bugUrl.concat(match.group(1)));
+		annotate(doc, range, "link/manual", bugUrl.concat(match.group(1)));
 	}
 }
