@@ -27,15 +27,16 @@ class BugLinkAnnotator extends BlipProcessor {
 
 	/** Create a BugLinkAnnotator for the specified URL. */
 	public BugLinkAnnotator(String bugUrl) {
+		super();
 		this.bugUrl = bugUrl;
 	}
 
-	/** Return a regular expression matching the text we want to process. */
+	@Override
 	protected String getPattern() {
 		return "(?:[Bb]ug|[Ii]ssue|[Tt]icket|[Cc]ase) #(\\d+)";
 	}
 	
-	/** Process a regular expression match. */
+	@Override
 	protected void processMatch(TextView doc, Range range, Matcher match) {
 		annotate(doc, range, "link/manual", bugUrl.concat(match.group(1)));
 	}
