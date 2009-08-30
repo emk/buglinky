@@ -5,8 +5,9 @@ buglinky is a bot for use with Google Wave.  For now, it must be run on on
 a Google App Engine instance.
 
 When run, buglinky turns text of the form "bug #12" and "issue #13" into
-links to a bug tracker.  It runs in real time as you edit, and it tries to
-generate as little network traffic as possible.
+links to a bug tracker, and turns bare URLs into linked text of the form
+"issue #13".  It runs in real time as you edit, and it tries to generate as
+little network traffic as possible.
 
 For more information, see:
 
