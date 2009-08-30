@@ -1,13 +1,22 @@
 buglinky
 ========
 
-buglinky is a bot for use with Google Wave.  For now, it must be run on
-on a Google App Engine instance.
+buglinky is a bot for use with Google Wave.  For now, it must be run on on
+a Google App Engine instance.
+
+When run, buglinky attempts to turn text of the form "bug #12" and "issue
+#13" into links to a bug tracker.  It runs in real time as you edit, and it
+tries to generate as little network traffic as possible.
 
 For more information, see:
 
 * <http://wave.google.com/>
 * <http://code.google.com/apis/wave/extensions/robots/java-tutorial.html>
+
+If you want to see a much simpler (but still very useful) wave robot, see
+<http://senikk.com/min-f%C3%B8rste-google-wave-robot>.  That one doesn't
+run in real time as you edit, but on the other hand, it's only half a
+screen of Python.
 
 Customizing
 -----------
