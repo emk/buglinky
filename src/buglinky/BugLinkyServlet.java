@@ -16,10 +16,12 @@
 package buglinky;
 
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import com.google.wave.api.*;
+import com.google.wave.api.AbstractRobotServlet;
+import com.google.wave.api.Blip;
+import com.google.wave.api.Event;
+import com.google.wave.api.RobotMessageBundle;
+import com.google.wave.api.TextView;
 
 /** Called via JSON-RPC whenever an event occurs on one of our waves. */
 @SuppressWarnings("serial")
@@ -28,24 +30,13 @@ public class BugLinkyServlet extends AbstractRobotServlet {
 		Logger.getLogger(BugLinkyServlet.class.getName());
 	
 	private static final String ME = "buglinky@appspot.com";
-	private static final String LINK = "link/manual";
-
 	private static final String INSTRUCTIONS =
 		"buglinky will attempt to link \"bug #NNN\" to a bug tracker.";
+
+	/** The URL to a specific bug in our bug tracker, minus the number. */
 	private static final String BUG_URL =
 		"http://code.google.com/p/google-wave-resources/issues/detail?id=";
-
-	/**
-	 * Regex used to find bug numbers in the text. Note that we require at least
-	 * one non-numeric character after the bug number (and not a newline). This
-	 * ensures that when the user is adding text at the end of a paragraph, we
-	 * won't add any links until the user is safely outside the area that we
-	 * need to modify. Users making modifications inside of paragraphs will have
-	 * to live with minor glitches.
-	 */
-	private static final Pattern REGEX =
-		Pattern.compile("(?:bug|issue) #(\\d+)(?!\\d|\\r|\\n)");
-
+	
 	/** Called when we receive events from the Wave server. */
 	@Override
 	public void processEvents(RobotMessageBundle bundle) {
@@ -65,6 +56,7 @@ public class BugLinkyServlet extends AbstractRobotServlet {
 
 	/** Dispatch events to the appropriate handler method. */
 	private void dispatchEvents(RobotMessageBundle bundle) {
+		Annotator annotator = new BugLinkAnnotator(BUG_URL);
 		for (Event e : bundle.getEvents()) {
 			if (!e.getModifiedBy().equals(ME)) {
 				switch (e.getType()) {
@@ -74,7 +66,7 @@ public class BugLinkyServlet extends AbstractRobotServlet {
 				// BLIP_VERSION_CHANGED, we'll apply our links in real time.
 				case BLIP_SUBMITTED:
 				case BLIP_VERSION_CHANGED:
-					addLinksToBlip(e.getBlip());
+					annotator.processBlip(e.getBlip());
 					break;
 					
 				default:
@@ -82,44 +74,5 @@ public class BugLinkyServlet extends AbstractRobotServlet {
 				}
 			}
 		}
-	}
-
-	/** Add links to the specified blip. */
-	private void addLinksToBlip(Blip blip) {
-		LOG.fine("Adding links to blip " + blip.getBlipId());
-		// Adapted from http://senikk.com/min-f%C3%B8rste-google-wave-robot,
-		// a robot which links to @names on Twitter.
-		TextView doc = blip.getDocument();
-		Matcher matcher = REGEX.matcher(doc.getText());
-		while (matcher.find()) {
-			LOG.fine("Found a link: " + matcher.group());
-			Range range = new Range(matcher.start(), matcher.end());
-			String url = BUG_URL.concat(matcher.group(1));
-			maybeAnnotate(doc, range, LINK, url);
-		}
-	}
-
-	/**
-	 * Add an annotation if it isn't already present.
-	 * 
-	 * The Wave Robot API does not currently filter out duplicate annotation
-	 * requests, which causes extra network traffic and more possibilities for
-	 * nasty bot loops.  So we do this screening on our end.
-	 */
-	private void maybeAnnotate(TextView doc, Range range, String name,
-			String value) {
-		// If this annotation is already present, give up now.  Note that
-		// we allow the existing annotation to be bigger than the one we're
-		// creating, because in that case, setting the new annotation won't
-		// do anything useful.
-		for (Annotation annotation : doc.getAnnotations(range, name)) {
-			if (annotation.getValue().equals(value) &&
-					annotation.getRange().getStart() <= range.getStart() &&
-					range.getEnd() <= annotation.getRange().getEnd())
-				return;
-		}
-		
-		LOG.fine("Annotating with " + value);
-		doc.setAnnotation(range, name, value);
 	}
 }
