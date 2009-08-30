@@ -29,7 +29,20 @@ public class BugLinkyServlet extends AbstractRobotServlet {
 	private static final Logger LOG =
 		Logger.getLogger(BugLinkyServlet.class.getName());
 	
-	private static final String ME = "buglinky@appspot.com";
+	/**
+	 * The name of this application on Google App Engine.  This is used
+	 * to ignore our own edits, and as our default profile name.
+	 * 
+	 * BE SURE TO UPDATE THIS FOR YOUR BOT! If you don't update this
+	 * correctly, your bot will go into an infinite loop and generate
+	 * dozens of useless messages per second.
+	 */
+	static final String APP_NAME = "buglinky";
+	
+	/** The wave address for this bot.  Used to ignore our own edits. */
+	private static final String BOT_ADDRESS = APP_NAME + "@appspot.com";
+
+	/** The instructions to display when we join a wave. */
 	private static final String INSTRUCTIONS =
 		"buglinky will attempt to link \"bug #NNN\" to a bug tracker.";
 
@@ -37,7 +50,6 @@ public class BugLinkyServlet extends AbstractRobotServlet {
 	private static final String BUG_URL =
 		"http://code.google.com/p/google-wave-resources/issues/detail?id=";
 	
-	/** Called when we receive events from the Wave server. */
 	@Override
 	public void processEvents(RobotMessageBundle bundle) {
 		if (bundle.wasSelfAdded())
@@ -58,7 +70,7 @@ public class BugLinkyServlet extends AbstractRobotServlet {
 	private void dispatchEvents(RobotMessageBundle bundle) {
 		BlipProcessor annotator = new BugLinkAnnotator(BUG_URL);
 		for (Event e : bundle.getEvents()) {
-			if (!e.getModifiedBy().equals(ME)) {
+			if (!e.getModifiedBy().equals(BOT_ADDRESS)) {
 				switch (e.getType()) {
 				// One or the other of these should be wired up in
 				// capabilities.xml.  If we use BLIP_SUBMITTED, we'll apply

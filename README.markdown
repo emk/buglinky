@@ -26,9 +26,9 @@ match your App Engine application name:
 
 1. The &lt;application>...&lt;/application> element in
    war/WEB-INF/appengine-web.xml.
-2. The address in BugLinkyServlet.ME.  Failure to change this address
-   will result you receiving tens of thousands of useless requests,
-   because your bot will be responding to its own edits.
+2. BugLinkyServlet.APP_NAME.  Failure to change this address will result
+   you receiving tens of thousands of useless requests, because your bot
+   will be responding to its own edits.
 
 You will probably also want to take a look at the various information in
 BugLinkyProfileServlet.

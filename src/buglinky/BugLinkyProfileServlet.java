@@ -28,6 +28,6 @@ public class BugLinkyProfileServlet extends ProfileServlet {
 
 	@Override
 	public String getRobotName() {
-		return "buglinky";
+		return BugLinkyServlet.APP_NAME;
 	}
 }
