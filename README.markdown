@@ -15,7 +15,7 @@ Customizing
 At a minimum, you must change the following two pieces of information to
 match your App Engine application name:
 
-1. The <application>...</application> element in
+1. The &lt;application>...&lt;/application> element in
    war/WEB-INF/appengine-web.xml.
 2. The address in BugLinkyServlet.ME.  Failure to change this address
    will result you receiving tens of thousands of useless requests,
