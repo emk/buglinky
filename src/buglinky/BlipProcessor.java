@@ -33,6 +33,8 @@ abstract class BlipProcessor {
 
 	/**
 	 * Annotate the specified blip.
+	 * 
+	 * @param blip The blip to process.
 	 */
 	public void processBlip(Blip blip) {
 		LOG.fine("Processing blip " + blip.getBlipId() + " with " +
@@ -86,7 +88,16 @@ abstract class BlipProcessor {
 	}
 	
 	/**
-	 * Process a regular expression match.
+	 * Process a regular expression match.  Use the annotate and replace
+	 * functions to perform the actual transformations.
+	 * 
+	 * @param doc   The document containing the match.
+	 * @param range The range of text in the blip that was matched.
+	 * @param match The regular expression match object.  Note that the
+	 *              offsets provided by this object may be incorrect
+	 *              because of previous text replacements.
+	 * 
+	 * @see BlipProcessor#annotate(TextView, Range, String, String)
 	 */
 	protected abstract void processMatch(TextView doc, Range range,
 			Matcher match);
@@ -96,7 +107,12 @@ abstract class BlipProcessor {
 	 * 
 	 * The Wave Robot API does not currently filter out duplicate annotation
 	 * requests, which causes extra network traffic and more possibilities for
-	 * nasty bot loops.  So we do this screening on our end.
+	 * nasty bot loops.  So we filter them out ourselves.
+	 * 
+	 * @param doc   The TextView to containing the text to annotate.
+	 * @param range The range of text to apply the annotation to.
+	 * @param name  The name of the annotation.
+	 * @param value The value of the annotation. 
 	 */
 	protected void annotate(TextView doc, Range range, String name,
 			String value) {
