@@ -25,23 +25,24 @@ import com.google.wave.api.Range;
 import com.google.wave.api.TextView;
 
 /**
- * Adds annotations to a blip.
+ * Annotates and edits a blip.
  */
-abstract class Annotator {
+abstract class BlipProcessor {
 	private static final Logger LOG =
-		Logger.getLogger(Annotator.class.getName());
+		Logger.getLogger(BlipProcessor.class.getName());
 
 	/**
 	 * Annotate the specified blip.
 	 */
 	public void processBlip(Blip blip) {
-		LOG.fine("Annotating blip " + blip.getBlipId());
+		LOG.fine("Processing blip " + blip.getBlipId() + " with " +
+				this.getClass().getName());
 		// Adapted from http://senikk.com/min-f%C3%B8rste-google-wave-robot,
 		// a robot which links to @names on Twitter.
 		TextView doc = blip.getDocument();
 		Matcher matcher = getCompiledPattern().matcher(doc.getText());
 		while (matcher.find()) {
-			LOG.fine("Found text to annotate: " + matcher.group());
+			LOG.fine("Found match to process: " + matcher.group());
 			Range range = new Range(matcher.start(), matcher.end());
 			processMatch(doc, range, matcher);
 		}

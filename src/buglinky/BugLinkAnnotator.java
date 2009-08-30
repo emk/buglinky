@@ -21,7 +21,7 @@ import com.google.wave.api.Range;
 import com.google.wave.api.TextView;
 
 /** Add bug links to a blip. */
-class BugLinkAnnotator extends Annotator {
+class BugLinkAnnotator extends BlipProcessor {
 	/** The URL to a bug, minus the actual bug number. */
 	private String bugUrl;
 

@@ -56,7 +56,7 @@ public class BugLinkyServlet extends AbstractRobotServlet {
 
 	/** Dispatch events to the appropriate handler method. */
 	private void dispatchEvents(RobotMessageBundle bundle) {
-		Annotator annotator = new BugLinkAnnotator(BUG_URL);
+		BlipProcessor annotator = new BugLinkAnnotator(BUG_URL);
 		for (Event e : bundle.getEvents()) {
 			if (!e.getModifiedBy().equals(ME)) {
 				switch (e.getType()) {
