@@ -15,6 +15,7 @@
 
 package buglinky;
 
+import java.util.ArrayList;
 import java.util.logging.Logger;
 
 import com.google.wave.api.AbstractRobotServlet;
@@ -68,7 +69,13 @@ public class BugLinkyServlet extends AbstractRobotServlet {
 
 	/** Dispatch events to the appropriate handler method. */
 	private void dispatchEvents(RobotMessageBundle bundle) {
-		BlipProcessor annotator = new BugLinkAnnotator(BUG_URL);
+		// We clean up URLs first, so that we can annotate the newly-created
+		// text in the second pass.
+		ArrayList<BlipProcessor> processors = new ArrayList<BlipProcessor>();
+		processors.add(new BugUrlReplacer(BUG_URL)); 
+		processors.add(new BugLinkAnnotator(BUG_URL)); 
+
+		// Process each event.
 		for (Event e : bundle.getEvents()) {
 			if (!e.getModifiedBy().equals(BOT_ADDRESS)) {
 				switch (e.getType()) {
@@ -78,7 +85,8 @@ public class BugLinkyServlet extends AbstractRobotServlet {
 				// BLIP_VERSION_CHANGED, we'll apply our links in real time.
 				case BLIP_SUBMITTED:
 				case BLIP_VERSION_CHANGED:
-					annotator.processBlip(e.getBlip());
+					for (BlipProcessor processor : processors)
+						processor.processBlip(e.getBlip());
 					break;
 					
 				default:

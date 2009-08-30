@@ -30,9 +30,16 @@ import com.google.wave.api.TextView;
 abstract class BlipProcessor {
 	private static final Logger LOG =
 		Logger.getLogger(BlipProcessor.class.getName());
+	
+	/**
+	 * The accumulated difference between the original length of the
+	 * blip, and the length after text replacements have been performed.
+	 */
+	private int totalCorrection;
 
 	/**
-	 * Annotate the specified blip.
+	 * Apply this text processor to the specified blip.  This function
+	 * is not re-entrant.
 	 * 
 	 * @param blip The blip to process.
 	 */
@@ -42,11 +49,13 @@ abstract class BlipProcessor {
 		// Adapted from http://senikk.com/min-f%C3%B8rste-google-wave-robot,
 		// a robot which links to @names on Twitter.
 		TextView doc = blip.getDocument();
+		totalCorrection = 0; // Reset.
 		Matcher matcher = getCompiledPattern().matcher(doc.getText());
 		while (matcher.find()) {
 			LOG.fine("Found match to process: " + matcher.group());
-			Range range = new Range(matcher.start(), matcher.end());
-			processMatch(doc, range, matcher);
+			int start = matcher.start() + totalCorrection;
+			int end   = matcher.end()   + totalCorrection;
+			processMatch(doc, new Range(start, end), matcher);
 		}
 	}
 
@@ -98,6 +107,7 @@ abstract class BlipProcessor {
 	 *              because of previous text replacements.
 	 * 
 	 * @see BlipProcessor#annotate(TextView, Range, String, String)
+	 * @see BlipProcessor#replace(TextView, Range, String)
 	 */
 	protected abstract void processMatch(TextView doc, Range range,
 			Matcher match);
@@ -129,5 +139,22 @@ abstract class BlipProcessor {
 		
 		LOG.fine("Annotating with " + name + "=" + value);
 		doc.setAnnotation(range, name, value);
+	}
+
+	/**
+	 * Replace the specified range in the TextView with a new string, leaving
+	 * existing annotations alone.
+	 * 
+	 * @param doc   The TextView to containing the text to annotate.
+	 * @param range The range of text to replace.  This must fall entirely
+	 *              within the current match.
+	 * @param text  The replacement text.
+	 */
+	protected void replace(TextView doc, Range range, String text) {
+		doc.replace(range, text);
+
+		// Update our correction factor to account for this replacement.
+		int oldLength = range.getEnd() - range.getStart();
+		totalCorrection = (totalCorrection - oldLength) + text.length();
 	}	
 }
