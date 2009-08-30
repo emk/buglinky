@@ -6,8 +6,8 @@ on a Google App Engine instance.
 
 For more information, see:
 
-    http://wave.google.com/
-    http://code.google.com/apis/wave/extensions/robots/java-tutorial.html
+* <http://wave.google.com/>
+* <http://code.google.com/apis/wave/extensions/robots/java-tutorial.html>
 
 Customizing
 -----------
@@ -39,7 +39,7 @@ these from any Google App Engine project:
     war/WEB-INF/lib/jdo2-api-2.3-ea.jar
 
 The following *.jar files are specific to Wave, and can be downloaded from
-http://code.google.com/p/wave-robot-java-client/downloads/list.
+<http://code.google.com/p/wave-robot-java-client/downloads/list>.
 
     war/WEB-INF/lib/json.jar
     war/WEB-INF/lib/jsonrpc.jar
