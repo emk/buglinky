@@ -73,7 +73,7 @@ public class BugLinkyServlet extends AbstractRobotServlet {
 		// text in the second pass.
 		ArrayList<BlipProcessor> processors = new ArrayList<BlipProcessor>();
 		processors.add(new BugUrlReplacer(BUG_URL)); 
-		processors.add(new BugLinkAnnotator(BUG_URL)); 
+		processors.add(new BugNumberLinker(BUG_URL)); 
 
 		// Process each event.
 		for (Event e : bundle.getEvents()) {
