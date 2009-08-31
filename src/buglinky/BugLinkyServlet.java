@@ -84,7 +84,7 @@ public class BugLinkyServlet extends AbstractRobotServlet {
 				"bugUrlLabel",
 				"Enter your issue URL, minus the issue number:"));
 		textView.appendElement(new FormElement(ElementType.INPUT,
-				"bugUrl", BUG_URL));
+				"bugUrl", getBugUrl(bundle)));
 		textView.append("\n");
 		textView.appendElement(new FormElement(ElementType.BUTTON,
 				"saveButton", "Save Preferences"));
