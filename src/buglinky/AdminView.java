@@ -15,6 +15,21 @@ public class AdminView {
 	private static final Logger LOG =
 		Logger.getLogger(AdminView.class.getName());
 
+	/** The name of the data document used to store our URL. */
+	private static final String BUGLINKY_URL_DOC = "buglinky-url";
+
+	/** The annotation we use to identify the blip containing our AdminView. */
+	private static final String BUGLINKY_ADMIN_ANNOTATION = "buglinky-admin";
+
+	/** The name of the bug URL field in our form. */
+	private static final String BUG_URL_LABEL = "bugUrlLabel";
+
+	/** The name of the bug URL field in our form. */
+	private static final String BUG_URL_FIELD = "bugUrl";
+	
+	/** The name of the save button in our form. */
+	private static final String SAVE_BUTTON = "saveButton";
+
 	/** The URL to a specific bug in our bug tracker, minus the number. */
 	private static final String BUG_URL =
 		"http://code.google.com/p/google-wave-resources/issues/detail?id=";
@@ -30,7 +45,7 @@ public class AdminView {
 
 	/** Get the URL prefix we'll use to link to bugs. */
 	static String getBugUrl(Wavelet wavelet) {
-		String bugUrl = wavelet.getDataDocument("buglinky-url");
+		String bugUrl = wavelet.getDataDocument(BUGLINKY_URL_DOC);
 		if (bugUrl == null)
 			bugUrl = BUG_URL;
 		LOG.fine("Using issue URL " + bugUrl);
@@ -48,18 +63,21 @@ public class AdminView {
 		// "Polly the Pollster" bot.
 		textView.append("\n\n");
 		textView.appendElement(new FormElement(ElementType.LABEL,
-				"bugUrl", "Enter your issue URL, minus the issue number:"));
+				BUG_URL_LABEL,
+				"Enter your issue URL, minus the issue number:"));
 		textView.appendElement(new FormElement(ElementType.INPUT,
-				"bugUrl", getBugUrl(wavelet)));
+				BUG_URL_FIELD, getBugUrl(wavelet)));
 		textView.append("\n");
 		textView.appendElement(new FormElement(ElementType.BUTTON,
-				"saveButton", "Save Preferences"));
-		textView.setAnnotation("buglinky-admin", "");		
+				SAVE_BUTTON, "Save Preferences"));
+		
+		// Make sure we can identify this blip again.
+		textView.setAnnotation(BUGLINKY_ADMIN_ANNOTATION, "");		
 	}
 
 	/** Does the specified blip contain our AdminView? */
 	public static boolean isAdminBlip(Blip blip) {
-		return blip.getDocument().hasAnnotation("buglinky-admin");
+		return blip.getDocument().hasAnnotation(BUGLINKY_ADMIN_ANNOTATION);
 	}
 
 	/** The blip containing our admin view. */
@@ -72,13 +90,13 @@ public class AdminView {
 
 	/** Called when a button is pressed in our AdminView. */
 	public void onFormButtonClicked(Event e) {
-		if (e.getButtonName().equals("saveButton")) {
+		if (e.getButtonName().equals(SAVE_BUTTON)) {
 			LOG.fine("Buglinky save button clicked");
 			FormView form = blip.getDocument().getFormView();
-			String newUrl = form.getFormElement("bugUrl").getValue();
+			String newUrl = form.getFormElement(BUG_URL_FIELD).getValue();
 			if (!newUrl.matches("^ *$")) {
 				LOG.fine("Setting issue URL to " + newUrl);
-				e.getWavelet().setDataDocument("buglinky-url", newUrl);
+				e.getWavelet().setDataDocument(BUGLINKY_URL_DOC, newUrl);
 			}
 		}		
 	}
