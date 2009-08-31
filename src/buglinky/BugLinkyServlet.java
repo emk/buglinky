@@ -20,8 +20,14 @@ import java.util.logging.Logger;
 
 import com.google.wave.api.AbstractRobotServlet;
 import com.google.wave.api.Blip;
+import com.google.wave.api.ElementType;
+import com.google.wave.api.Event;
+import com.google.wave.api.EventType;
+import com.google.wave.api.FormElement;
+import com.google.wave.api.FormView;
 import com.google.wave.api.RobotMessageBundle;
 import com.google.wave.api.TextView;
+import com.google.wave.api.Wavelet;
 
 /** Called via JSON-RPC whenever an event occurs on one of our waves. */
 @SuppressWarnings("serial")
@@ -44,7 +50,12 @@ public class BugLinkyServlet extends AbstractRobotServlet {
 
 	/** The instructions to display when we join a wave. */
 	private static final String INSTRUCTIONS =
-		"buglinky will attempt to link \"bug #NNN\" to a bug tracker.";
+		"buglinky will attempt to link \"issue #NNN\" to the Wave issue " +
+		"tracker.\n\n" +
+		"Note that the issue number must not be at the very end of " +
+		"a paragraph. This is temporary kludge to discourage buglinky from " +
+		"annotating your insertion point as you type.\n\n" +
+		"Once you've set your preferences, you can delete this blip.";
 
 	/** The URL to a specific bug in our bug tracker, minus the number. */
 	private static final String BUG_URL =
@@ -54,25 +65,66 @@ public class BugLinkyServlet extends AbstractRobotServlet {
 	public void processEvents(RobotMessageBundle bundle) {
 		if (bundle.wasSelfAdded())
 			addInstructionsToWave(bundle);
-		processBlips(bundle);
+		processButtonClicks(bundle);
+		processBlips(bundle, getBugUrl(bundle));
 	}
 
 	/** Add an instruction blip to this wave if we were just added. */
 	private void addInstructionsToWave(RobotMessageBundle bundle) {
-		LOG.fine("Adding instructions to wavelet " +
-				bundle.getWavelet().getWaveletId());
-		Blip blip = bundle.getWavelet().appendBlip();
+		Wavelet wavelet = bundle.getWavelet();
+		LOG.fine("Adding instructions to wavelet " + wavelet.getWaveletId());
+		Blip blip = wavelet.appendBlip();
 		TextView textView = blip.getDocument();
 		textView.append(INSTRUCTIONS);
+		
+		// Our form-handling code is heavily inspired by the original
+		// "Polly the Pollster" bot.
+		textView.append("\n\n");
+		textView.appendElement(new FormElement(ElementType.LABEL,
+				"bugUrlLabel",
+				"Enter your issue URL, minus the issue number:"));
+		textView.appendElement(new FormElement(ElementType.INPUT,
+				"bugUrl", BUG_URL));
+		textView.append("\n");
+		textView.appendElement(new FormElement(ElementType.BUTTON,
+				"saveButton", "Save Preferences"));
+		textView.setAnnotation("buglinky-admin", "");
+	}
+
+	private void processButtonClicks(RobotMessageBundle bundle) {
+		for (Event e : bundle.getEvents()) {
+			if (e.getType() == EventType.FORM_BUTTON_CLICKED) {
+				LOG.fine("Form button clicked");
+				TextView doc = e.getBlip().getDocument();
+				if (doc.hasAnnotation("buglinky-admin") &&
+						e.getButtonName().equals("saveButton")) {
+					LOG.fine("Buglinky save button clicked");
+					FormView form = doc.getFormView();
+					String newUrl = form.getFormElement("bugUrl").getValue();
+					if (!newUrl.matches("^ *$")) {
+						LOG.fine("Setting issue URL to " + newUrl);
+						e.getWavelet().setDataDocument("buglinky-url", newUrl);
+					}
+				}
+			}
+		}
+	}
+
+	private String getBugUrl(RobotMessageBundle bundle) {
+		String bugUrl = bundle.getWavelet().getDataDocument("buglinky-url");
+		if (bugUrl == null)
+			bugUrl = BUG_URL;
+		LOG.fine("Using issue URL " + bugUrl);
+		return bugUrl;
 	}
 
 	/** Process any blips which have changed. */
-	private void processBlips(RobotMessageBundle bundle) {
+	private void processBlips(RobotMessageBundle bundle, String bugUrl) {
 		// We clean up URLs first, so that we can annotate the newly-created
 		// text in the second pass.
 		ArrayList<BlipProcessor> processors = new ArrayList<BlipProcessor>();
-		processors.add(new BugUrlReplacer(BUG_URL)); 
-		processors.add(new BugNumberLinker(BUG_URL)); 
+		processors.add(new BugUrlReplacer(bugUrl)); 
+		processors.add(new BugNumberLinker(bugUrl)); 
 		BlipProcessor.applyProcessorsToChangedBlips(processors, bundle,
 				BOT_ADDRESS);		
 	}
