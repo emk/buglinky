@@ -33,7 +33,7 @@ class BugNumberLinker extends BlipProcessor {
 
 	@Override
 	protected String getPattern() {
-		return "(?:[Bb]ug|[Ii]ssue|[Tt]icket|[Cc]ase) #(\\d+)";
+		return "(?:[Bb]ug|[Ii]ssue|[Tt]icket|[Cc]ase) #?(\\d+)";
 	}
 	
 	@Override
