@@ -30,4 +30,9 @@ public class BugLinkyProfileServlet extends ProfileServlet {
 	public String getRobotName() {
 		return BugLinkyServlet.APP_NAME;
 	}
+
+	@Override
+	public String getRobotProfilePageUrl() {
+		return "http://github.com/emk/buglinky";
+	}
 }
