@@ -16,7 +16,8 @@
 package buglinky;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -55,13 +56,20 @@ abstract class BlipProcessor {
 			ArrayList<BlipProcessor> processors,
 			RobotMessageBundle bundle, String myAddress) {
 		// Find all affected blips.
-		HashSet<Blip> changedBlips = new HashSet<Blip>();
+		HashMap<Blip, Boolean> changedBlips = new HashMap<Blip, Boolean>();
 		for (Event e : bundle.getEvents()) {
 			if (!e.getModifiedBy().equals(myAddress)) {
 				switch (e.getType()) {
-				case BLIP_SUBMITTED:        // The user has clicked "Done".
-				case BLIP_VERSION_CHANGED:  // The blip has been updated.
-					changedBlips.add(e.getBlip());
+				// The blip has been updated.  Assume that the user is not yet
+				// done editing.
+				case BLIP_VERSION_CHANGED:  
+					changedBlips.put(e.getBlip(), true);
+					break;
+
+				// The user has clicked "Done".  Assume that the user has
+				// finished editing.
+				case BLIP_SUBMITTED:
+					changedBlips.put(e.getBlip(), false);
 					break;
 					
 				default:
@@ -71,9 +79,9 @@ abstract class BlipProcessor {
 		}
 		
 		// Process all affected blips.
-		for (Blip blip : changedBlips) {
+		for (Entry<Blip, Boolean> entry : changedBlips.entrySet()) {
 			for (BlipProcessor processor : processors)
-				processor.processBlip(blip);
+				processor.processBlip(entry.getKey(), entry.getValue());
 		}
 	}
 
@@ -82,15 +90,17 @@ abstract class BlipProcessor {
 	 * is not re-entrant.
 	 * 
 	 * @param blip The blip to process.
+	 * @param userIsCurrentlyEditing Is user still editing?
 	 */
-	public void processBlip(Blip blip) {
+	public void processBlip(Blip blip, Boolean userIsCurrentlyEditing) {
 		LOG.fine("Processing blip " + blip.getBlipId() + " with " +
 				this.getClass().getName());
 		// Adapted from http://senikk.com/min-f%C3%B8rste-google-wave-robot,
 		// a robot which links to @names on Twitter.
 		TextView doc = blip.getDocument();
 		totalCorrection = 0; // Reset.
-		Matcher matcher = getCompiledPattern().matcher(doc.getText());
+		Pattern pattern = getCompiledPattern(userIsCurrentlyEditing);
+		Matcher matcher = pattern.matcher(doc.getText());
 		while (matcher.find()) {
 			LOG.fine("Found match to process: " + matcher.group());
 			int start = matcher.start() + totalCorrection;
@@ -106,11 +116,13 @@ abstract class BlipProcessor {
 	
 	/**
 	 * Take our simple pattern, add some kludges, and compile it.
+	 * 
+	 * @param userIsCurrentlyEditing Is user still editing?
 	 */
-	private Pattern getCompiledPattern() {
-		// KLUDGE - Try to avoid annotating text while the user's caret is
-		// still inside the annotation.  For example, imagine that the user
-		// types:
+	private Pattern getCompiledPattern(Boolean userIsCurrentlyEditing) {
+		// KLUDGE - If the user is currently editing, try to avoid annotating
+		// text while the user's caret is still inside the annotation.  For
+		// example, imagine that the user types:
 		//
 		//   bug #12|
 		//
@@ -133,7 +145,10 @@ abstract class BlipProcessor {
 		// don't want to use the last character that would normally be matched
 		// by getPattern as our negative lookahead, so we use a possessive
 		// qualifier to avoid backtracking.
-		return Pattern.compile("(?:" + getPattern() + "){1}+(?!\\r|\\n)");
+		if (userIsCurrentlyEditing)
+			return Pattern.compile("(?:" + getPattern() + "){1}+(?!\\r|\\n)");
+		else
+			return Pattern.compile(getPattern());
 	}
 	
 	/**

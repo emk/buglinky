@@ -37,11 +37,8 @@ public class AdminView {
 	/** The instructions to display when we join a wave. */
 	private static final String INSTRUCTIONS =
 		"buglinky will attempt to link \"issue #NNN\" to the Wave issue " +
-		"tracker.\n\n" +
-		"Note that the issue number must not be at the very end of " +
-		"a paragraph. This is temporary kludge to discourage buglinky from " +
-		"annotating your insertion point as you type.\n\n" +
-		"Once you've set your preferences, you can delete this blip.";
+		"tracker (Once you've set your preferences, you can delete this " +
+		"blip.)";
 
 	/** Get the URL prefix we'll use to link to bugs. */
 	static String getBugUrl(Wavelet wavelet) {
