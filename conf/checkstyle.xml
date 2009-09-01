@@ -49,7 +49,7 @@
       <property name="ignorePattern" value="@"/>
     </module>
     <module name="MethodLength">
-      <property name="max" value="30"/>
+      <property name="max" value="35"/>
     </module>
     <module name="ParameterNumber"/>
     <module name="EmptyForIteratorPad"/>
